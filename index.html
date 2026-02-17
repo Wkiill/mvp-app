@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#11131a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="3 MVPs" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <!-- iOS Home Screen icon (needs a real file; see icons section) -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <title>3 MVP Prototypes</title>
+
+  <style>
+    :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { margin: 0; background:#0b0c10; color:#e9eef6; }
+    header { padding: 14px 16px; background:#11131a; position: sticky; top:0; border-bottom:1px solid #1e2230; }
+    h1 { font-size: 16px; margin:0 0 10px; font-weight: 700; }
+    .tabs { display:flex; gap:8px; flex-wrap: wrap; }
+    .tabbtn {
+      padding:10px 12px; border-radius: 10px; border:1px solid #2a2f42;
+      background:#141827; color:#e9eef6; cursor:pointer; font-weight: 600;
+    }
+    .tabbtn.active { background:#1e2a5a; border-color:#3a57ff; }
+    main { padding: 16px; max-width: 920px; margin: 0 auto; }
+    .card {
+      background:#11131a; border:1px solid #1e2230; border-radius: 14px;
+      padding: 14px; margin: 12px 0;
+    }
+    .grid { display:grid; gap: 10px; grid-template-columns: 1fr; }
+    @media (min-width: 700px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+    label { font-size: 13px; opacity: .9; display:block; margin: 6px 0 6px; }
+    input, select, textarea {
+      width:100%; padding: 10px 12px; border-radius: 10px;
+      border:1px solid #2a2f42; background:#0f1220; color:#e9eef6;
+      outline: none;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
+    .btn {
+      padding: 10px 12px; border-radius: 10px; border:1px solid #2a2f42;
+      background:#1b1f33; color:#e9eef6; cursor:pointer; font-weight: 700;
+    }
+    .btn.primary { background:#2b44ff; border-color:#3a57ff; }
+    .btn.danger { background:#4a1b22; border-color:#7a2b38; }
+    .muted { opacity:.8; font-size: 13px; }
+    .big { font-size: 18px; font-weight: 800; }
+    .pill { display:inline-block; padding: 6px 10px; border: 1px solid #2a2f42; border-radius: 999px; background:#0f1220; font-size: 12px; }
+    .divider { height:1px; background:#1e2230; margin: 12px 0; }
+    .kpi { display:flex; gap:10px; flex-wrap: wrap; }
+    .kpi .card { margin:0; flex: 1; min-width: 220px; }
+    ul { margin: 8px 0 0 18px; }
+    .hidden { display:none; }
+    .ok { color:#9cffc2; }
+    .warn { color:#ffd27a; }
+    .bad { color:#ff8a8a; }
+    .copybox { display:flex; gap:10px; align-items: stretch; }
+    .copybox textarea { flex:1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>3 MVP Prototypes (PWA)</h1>
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="life">1) Life ROI</button>
+      <button class="tabbtn" data-tab="meal">2) Meal Planner</button>
+      <button class="tabbtn" data-tab="nego">3) Negotiation</button>
+      <button class="tabbtn" data-tab="history">History</button>
+    </div>
+    <div id="pwa_status" class="muted" style="margin-top:8px;"></div>
+  </header>
+
+  <main>
+    <!-- LIFE ROI -->
+    <section id="life" class="tab card">
+      <div class="grid two">
+        <div>
+          <div class="big">Life ROI Tracker</div>
+          <div class="muted">Translate habits → 5-year time + opportunity cost.</div>
+
+          <div class="divider"></div>
+
+          <label>Hours/day scrolling</label>
+          <input id="life_scroll" type="number" min="0" step="0.1" placeholder="e.g., 2.5" />
+
+          <label>Hours/day building your future</label>
+          <input id="life_build" type="number" min="0" step="0.1" placeholder="e.g., 1.5" />
+
+          <label>Your time value ($/hour)</label>
+          <input id="life_value" type="number" min="0" step="1" placeholder="e.g., 25" />
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="life_calc">Calculate</button>
+            <button class="btn" id="life_demo">Fill Demo</button>
+            <button class="btn danger" id="life_reset">Reset</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="kpi">
+            <div class="card">
+              <div class="muted">5-year scrolling time</div>
+              <div class="big" id="life_5y_hours">—</div>
+              <div class="muted" id="life_5y_days"></div>
+            </div>
+            <div class="card">
+              <div class="muted">5-year opportunity cost</div>
+              <div class="big" id="life_5y_cost">—</div>
+            </div>
+            <div class="card">
+              <div class="muted">Balance score</div>
+              <div class="big" id="life_score">—</div>
+              <div class="muted" id="life_score_note"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div class="muted">Nudge</div>
+            <div id="life_nudge" class="big">Enter values and hit Calculate.</div>
+            <div class="divider"></div>
+            <div class="muted">Quick plan</div>
+            <ul id="life_plan"><li>—</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEAL -->
+    <section id="meal" class="tab card hidden">
+      <div class="grid two">
+        <div>
+          <div class="big">Auto Meal Plan + Grocery List</div>
+          <div class="muted">Fast template-based MVP (offline-friendly).</div>
+
+          <div class="divider"></div>
+
+          <label>Weekly budget ($)</label>
+          <input id="meal_budget" type="number" min="10" step="1" placeholder="e.g., 70" />
+
+          <label>Diet style</label>
+          <select id="meal_style">
+            <option value="balanced">Balanced</option>
+            <option value="highprotein">High Protein</option>
+            <option value="vegetarian">Vegetarian</option>
+          </select>
+
+          <label>Cooking level</label>
+          <select id="meal_skill">
+            <option value="easy">Easy (10–20 min)</option>
+            <option value="medium">Medium (20–40 min)</option>
+          </select>
+
+          <label>Meals/day</label>
+          <select id="meal_perday">
+            <option value="2">2 meals/day</option>
+            <option value="3" selected>3 meals/day</option>
+          </select>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="meal_gen">Generate</button>
+            <button class="btn" id="meal_demo">Fill Demo</button>
+            <button class="btn danger" id="meal_reset">Reset</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="kpi">
+            <div class="card">
+              <div class="muted">Daily budget</div>
+              <div class="big" id="meal_daily">—</div>
+            </div>
+            <div class="card">
+              <div class="muted">Estimated waste savings</div>
+              <div class="big" id="meal_savings">—</div>
+              <div class="muted">Assume ~10%</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div class="muted">7-day plan</div>
+            <div id="meal_plan" class="muted">Generate a plan.</div>
+          </div>
+
+          <div class="card">
+            <div class="muted">Grocery list</div>
+            <div class="copybox">
+              <textarea id="meal_list" readonly placeholder="Your grocery list appears here..."></textarea>
+              <button class="btn" id="meal_copy">Copy</button>
+            </div>
+            <div class="muted" id="meal_copy_note"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEGOTIATION -->
+    <section id="nego" class="tab card hidden">
+      <div class="grid two">
+        <div>
+          <div class="big">Negotiation Coach</div>
+          <div class="muted">Instant “sendable” script.</div>
+
+          <div class="divider"></div>
+
+          <label>Scenario</label>
+          <select id="nego_type">
+            <option value="salary" selected>Salary offer</option>
+            <option value="rent">Rent reduction</option>
+            <option value="car">Car price</option>
+            <option value="freelance">Freelance rate</option>
+          </select>
+
+          <label>Current offer ($)</label>
+          <input id="nego_current" type="number" min="0" step="1" placeholder="e.g., 55000" />
+
+          <label>Your target ($)</label>
+          <input id="nego_target" type="number" min="0" step="1" placeholder="e.g., 65000" />
+
+          <label>Your leverage (1–10)</label>
+          <input id="nego_leverage" type="number" min="1" max="10" step="1" value="5" />
+
+          <label>Notes (optional)</label>
+          <textarea id="nego_notes" placeholder="Accomplishments, comps, deadlines..."></textarea>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn primary" id="nego_gen">Generate Script</button>
+            <button class="btn" id="nego_demo">Fill Demo</button>
+            <button class="btn danger" id="nego_reset">Reset</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="kpi">
+            <div class="card">
+              <div class="muted">Ask strength</div>
+              <div class="big" id="nego_strength">—</div>
+              <div class="muted" id="nego_strength_note"></div>
+            </div>
+            <div class="card">
+              <div class="muted">Suggested counter range</div>
+              <div class="big" id="nego_range">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div class="muted">Sendable message</div>
+            <div class="copybox">
+              <textarea id="nego_script" readonly placeholder="Generate a script..."></textarea>
+              <button class="btn" id="nego_copy">Copy</button>
+            </div>
+            <div class="muted" id="nego_copy_note"></div>
+          </div>
+
+          <div class="card">
+            <div class="muted">Tactical tips</div>
+            <ul id="nego_tips"><li>—</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="tab card hidden">
+      <div class="big">History</div>
+      <div class="muted">Saved locally in this browser (offline OK).</div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn" id="hist_refresh">Refresh</button>
+        <button class="btn danger" id="hist_clear">Clear</button>
+      </div>
+      <div class="divider"></div>
+      <div id="hist_list" class="muted">No history yet.</div>
+    </section>
+  </main>
+
+<script>
+  // Register Service Worker (required for PWA install + offline)
+  (function registerSW(){
+    const status = document.getElementById("pwa_status");
+    if (!("serviceWorker" in navigator)) {
+      status.textContent = "PWA: Service workers not supported in this browser.";
+      return;
+    }
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => status.textContent = "PWA: Offline ready ✅ (service worker registered)")
+      .catch(() => status.textContent = "PWA: Service worker failed to register ❌");
+  })();
+
+  // Tabs
+  const tabBtns = document.querySelectorAll(".tabbtn");
+  const tabs = document.querySelectorAll(".tab");
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const id = btn.dataset.tab;
+      tabs.forEach(t => t.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      if (id === "history") renderHistory();
+    });
+  });
+
+  // Utils
+  const fmt2 = (n) => isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—";
+  const fmt0 = (n) => isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—";
+  const money = (n) => isFinite(n) ? n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }) : "—";
+
+  const HISTORY_KEY = "mvp_history_v1";
+  const saveHistory = (entry) => {
+    const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    existing.unshift({ ...entry, ts: new Date().toISOString() });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(existing.slice(0, 25)));
+  };
+
+  // 1) LIFE ROI
+  const life_calc = () => {
+    const scroll = parseFloat(document.getElementById("life_scroll").value || "0");
+    const build  = parseFloat(document.getElementById("life_build").value || "0");
+    const value  = parseFloat(document.getElementById("life_value").value || "0");
+
+    const fiveYHours = scroll * 365 * 5;
+    const fiveYDays  = fiveYHours / 24;
+    const cost = fiveYHours * value;
+
+    const total = Math.max(scroll + build, 0.0001);
+    const score = Math.round((build / total) * 100);
+
+    document.getElementById("life_5y_hours").textContent = `${fmt2(fiveYHours)} hrs`;
+    document.getElementById("life_5y_days").textContent  = `≈ ${fmt2(fiveYDays)} days`;
+    document.getElementById("life_5y_cost").textContent = money(cost);
+    document.getElementById("life_score").textContent = `${score}/100`;
+
+    let cls="warn", note="Mixed — you’re building, but leaking time.";
+    let nudge="Small shifts compound fast.";
+    let plan=[
+      "Cut scrolling by 20 minutes/day this week.",
+      "Replace with 20 minutes on one goal.",
+      "Recheck in 7 days."
+    ];
+    if (score >= 65) {
+      cls="ok"; note="Strong — your time mix is future-forward.";
+      nudge="Keep the edge. Don’t drift.";
+      plan=[
+        "Protect your prime hours (first 2–3 after waking).",
+        "Batch scrolling into one time window.",
+        "Add one measurable weekly milestone."
+      ];
+    } else if (score < 40) {
+      cls="bad"; note="Warning — current pattern will feel expensive later.";
+      nudge="You don’t need motivation. You need friction.";
+      plan=[
+        "Log out of 1 app for 7 days.",
+        "Cap: 60 minutes/day total scrolling.",
+        "Replace with a confidence habit (gym, study sprint, apps)."
+      ];
+    }
+    const noteEl = document.getElementById("life_score_note");
+    noteEl.textContent = note;
+    noteEl.className = `muted ${cls}`;
+    document.getElementById("life_nudge").textContent = nudge;
+    document.getElementById("life_plan").innerHTML = plan.map(x=>`<li>${x}</li>`).join("");
+
+    saveHistory({ product:"Life ROI", summary:`Scroll ${scroll}/day, Build ${build}/day, 5y scroll ${fmt2(fiveYHours)}h, score ${score}/100` });
+  };
+
+  document.getElementById("life_calc").addEventListener("click", life_calc);
+  document.getElementById("life_demo").addEventListener("click", () => {
+    document.getElementById("life_scroll").value="2.5";
+    document.getElementById("life_build").value="1.5";
+    document.getElementById("life_value").value="25";
+    life_calc();
+  });
+  document.getElementById("life_reset").addEventListener("click", () => {
+    ["life_scroll","life_build","life_value"].forEach(id=>document.getElementById(id).value="");
+    ["life_5y_hours","life_5y_days","life_5y_cost","life_score"].forEach(id=>document.getElementById(id).textContent="—");
+    document.getElementById("life_score_note").textContent="";
+    document.getElementById("life_nudge").textContent="Enter values and hit Calculate.";
+    document.getElementById("life_plan").innerHTML="<li>—</li>";
+  });
+
+  // 2) MEAL
+  const mealTemplates = {
+    balanced: {
+      easy: [
+        { meal:"Greek yogurt + fruit + granola", items:["yogurt","fruit","granola"] },
+        { meal:"Chicken rice bowl + veggies", items:["chicken","rice","frozen veggies","soy sauce"] },
+        { meal:"Pasta + marinara + salad", items:["pasta","marinara","lettuce","olive oil"] },
+        { meal:"Eggs + toast + spinach", items:["eggs","bread","spinach"] }
+      ],
+      medium: [
+        { meal:"Turkey chili + rice", items:["ground turkey","beans","tomato sauce","onion","rice"] },
+        { meal:"Salmon + potatoes + greens", items:["salmon","potatoes","greens","lemon"] },
+        { meal:"Stir fry: chicken + veggies + rice", items:["chicken","frozen veggies","rice","soy sauce"] }
+      ]
+    },
+    highprotein: {
+      easy: [
+        { meal:"Eggs + cottage cheese + fruit", items:["eggs","cottage cheese","fruit"] },
+        { meal:"Tuna wrap + salad", items:["tuna","tortillas","lettuce","mayo"] },
+        { meal:"Chicken + rice + broccoli", items:["chicken","rice","broccoli"] },
+        { meal:"Protein smoothie", items:["protein powder","milk","banana","peanut butter"] }
+      ],
+      medium: [
+        { meal:"Lean beef bowls + veggies", items:["lean beef","rice","onion","frozen veggies"] },
+        { meal:"Baked chicken thighs + potatoes", items:["chicken thighs","potatoes","greens"] }
+      ]
+    },
+    vegetarian: {
+      easy: [
+        { meal:"Oats + peanut butter + banana", items:["oats","peanut butter","banana"] },
+        { meal:"Bean burrito bowls", items:["beans","rice","salsa","lettuce","cheese"] },
+        { meal:"Pasta + pesto + veggies", items:["pasta","pesto","frozen veggies"] },
+        { meal:"Eggs + toast + avocado", items:["eggs","bread","avocado"] }
+      ],
+      medium: [
+        { meal:"Tofu stir fry + rice", items:["tofu","frozen veggies","rice","soy sauce"] },
+        { meal:"Lentil soup + bread", items:["lentils","onion","carrots","broth","bread"] }
+      ]
+    }
+  };
+
+  const meal_gen = () => {
+    const budget = parseFloat(document.getElementById("meal_budget").value || "0");
+    const style  = document.getElementById("meal_style").value;
+    const skill  = document.getElementById("meal_skill").value;
+    const perday = parseInt(document.getElementById("meal_perday").value, 10);
+
+    document.getElementById("meal_daily").textContent = money(budget/7);
+    document.getElementById("meal_savings").textContent = money(budget*0.10);
+
+    const pool = mealTemplates[style]?.[skill] || mealTemplates.balanced.easy;
+
+    const grocery = new Map();
+    const plan = [];
+    for (let d=1; d<=7; d++) {
+      const meals=[];
+      for (let m=0; m<perday; m++) {
+        const pick = pool[(d+m) % pool.length];
+        meals.push(pick.meal);
+        pick.items.forEach(i => grocery.set(i,(grocery.get(i)||0)+1));
+      }
+      plan.push({day:d, meals});
+    }
+
+    document.getElementById("meal_plan").innerHTML = plan.map(p => `
+      <div class="card" style="margin:10px 0;">
+        <div class="pill">Day ${p.day}</div>
+        <ul>${p.meals.map(x=>`<li>${x}</li>`).join("")}</ul>
+      </div>
+    `).join("");
+
+    const list = [...grocery.keys()].sort();
+    document.getElementById("meal_list").value =
+      "Grocery List (starter)\n----------------------\n" +
+      list.map(x=>"• "+x).join("\n") +
+      "\n\nPantry add-ons:\n• salt\n• pepper\n• olive oil\n• garlic\n";
+
+    document.getElementById("meal_copy_note").textContent = "";
+    saveHistory({ product:"Meal Planner", summary:`Budget $${fmt0(budget)}, ${style}, ${skill}, ${perday} meals/day` });
+  };
+
+  document.getElementById("meal_gen").addEventListener("click", meal_gen);
+  document.getElementById("meal_demo").addEventListener("click", () => {
+    document.getElementById("meal_budget").value="70";
+    document.getElementById("meal_style").value="highprotein";
+    document.getElementById("meal_skill").value="easy";
+    document.getElementById("meal_perday").value="3";
+    meal_gen();
+  });
+  document.getElementById("meal_reset").addEventListener("click", () => {
+    document.getElementById("meal_budget").value="";
+    document.getElementById("meal_plan").textContent="Generate a plan.";
+    document.getElementById("meal_list").value="";
+    document.getElementById("meal_daily").textContent="—";
+    document.getElementById("meal_savings").textContent="—";
+    document.getElementById("meal_copy_note").textContent="";
+  });
+  document.getElementById("meal_copy").addEventListener("click", async () => {
+    const txt = document.getElementById("meal_list").value;
+    if (!txt) return;
+    try { await navigator.clipboard.writeText(txt); document.getElementById("meal_copy_note").textContent="Copied ✅"; }
+    catch { document.getElementById("meal_copy_note").textContent="Copy failed in Safari — select text and copy."; }
+  });
+
+  // 3) NEGOTIATION
+  const nego_gen = () => {
+    const type = document.getElementById("nego_type").value;
+    const current = parseFloat(document.getElementById("nego_current").value || "0");
+    const target  = parseFloat(document.getElementById("nego_target").value || "0");
+    const lev     = parseInt(document.getElementById("nego_leverage").value || "5", 10);
+    const notes   = (document.getElementById("nego_notes").value || "").trim();
+
+    const bufferPct = 0.02 + (lev * 0.006); // 2%..8%
+    const low = Math.max(target * (1-bufferPct), 0);
+    const high = Math.max(target * (1+bufferPct), 0);
+    document.getElementById("nego_range").textContent = `${money(low)} – ${money(high)}`;
+
+    const delta = target - current;
+    let strength="Balanced", note="Reasonable ask.";
+    if (delta <= 0) { strength="Low"; note="Target is not above current offer."; }
+    else if (current>0 && (delta/current) > 0.25) { strength="Aggressive"; note="Big jump — bring evidence + options."; }
+    else if (current>0 && (delta/current) < 0.12) { strength="Strong"; note="Tight ask — easy to justify."; }
+
+    document.getElementById("nego_strength").textContent = strength;
+    document.getElementById("nego_strength_note").textContent = note;
+
+    const scenarioWord = {salary:"offer", rent:"rent", car:"price", freelance:"rate"}[type] || "offer";
+
+    const evidence = notes
+      ? `\n\nContext:\n- ${notes.split("\n").map(x=>x.trim()).filter(Boolean).join("\n- ")}`
+      : "";
+
+    const script =
+`Thanks again — I’m excited about moving forward.
+
+Based on my research and the value I bring, I’d like to discuss adjusting the ${scenarioWord}.
+Would you be able to come closer to ${money(target)}?
+
+I’m confident I can contribute immediately and want the terms to reflect the scope and market.${evidence}
+
+If it helps, I’m happy to hop on a quick call to align and find a win-win.`;
+
+    document.getElementById("nego_script").value = script;
+
+    const tips=[];
+    if (type==="salary") tips.push("Ask for a call, not a yes/no over text.");
+    if (type==="rent") tips.push("Trade something back (longer lease, auto-pay, flexible dates).");
+    if (type==="car") tips.push("Negotiate out-the-door price, not monthly payment.");
+    if (type==="freelance") tips.push("If rate is fixed, reduce scope (revisions, timeline, deliverables).");
+    if (strength==="Aggressive") tips.push("Bring comps + a backup ask (bonus, PTO, perks, start date).");
+    tips.push("Stop talking after the ask. Let silence work.");
+
+    document.getElementById("nego_tips").innerHTML = tips.map(t=>`<li>${t}</li>`).join("");
+    document.getElementById("nego_copy_note").textContent="";
+
+    saveHistory({ product:"Negotiation Coach", summary:`${type}: current $${fmt0(current)} → target $${fmt0(target)} (lev ${lev}/10)` });
+  };
+
+  document.getElementById("nego_gen").addEventListener("click", nego_gen);
+  document.getElementById("nego_demo").addEventListener("click", () => {
+    document.getElementById("nego_type").value="salary";
+    document.getElementById("nego_current").value="55000";
+    document.getElementById("nego_target").value="65000";
+    document.getElementById("nego_leverage").value="6";
+    document.getElementById("nego_notes").value="2 internships + strong portfolio\nMarket comps show $62–70k\nCan start immediately";
+    nego_gen();
+  });
+  document.getElementById("nego_reset").addEventListener("click", () => {
+    document.getElementById("nego_current").value="";
+    document.getElementById("nego_target").value="";
+    document.getElementById("nego_notes").value="";
+    document.getElementById("nego_leverage").value="5";
+    document.getElementById("nego_script").value="";
+    document.getElementById("nego_strength").textContent="—";
+    document.getElementById("nego_strength_note").textContent="";
+    document.getElementById("nego_range").textContent="—";
+    document.getElementById("nego_tips").innerHTML="<li>—</li>";
+    document.getElementById("nego_copy_note").textContent="";
+  });
+  document.getElementById("nego_copy").addEventListener("click", async () => {
+    const txt=document.getElementById("nego_script").value;
+    if (!txt) return;
+    try { await navigator.clipboard.writeText(txt); document.getElementById("nego_copy_note").textContent="Copied ✅"; }
+    catch { document.getElementById("nego_copy_note").textContent="Copy failed in Safari — select text and copy."; }
+  });
+
+  // History
+  const renderHistory = () => {
+    const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    const box = document.getElementById("hist_list");
+    if (!existing.length) { box.textContent = "No history yet."; return; }
+    box.innerHTML = existing.map(e => {
+      const when = new Date(e.ts);
+      return `
+        <div class="card" style="margin:10px 0;">
+          <div class="pill">${e.product}</div>
+          <div style="margin-top:8px;">${e.summary}</div>
+          <div class="muted" style="margin-top:6px;">${when.toLocaleString()}</div>
+        </div>`;
+    }).join("");
+  };
+
+  document.getElementById("hist_refresh").addEventListener("click", renderHistory);
+  document.getElementById("hist_clear").addEventListener("click", () => {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  });
+</script>
+</body>
+</html>
